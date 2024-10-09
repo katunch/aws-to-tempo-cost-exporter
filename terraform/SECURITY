@@ -1,0 +1,97 @@
+
+main.tf (terraform)
+===================
+Tests: 3 (SUCCESSES: 2, FAILURES: 1, EXCEPTIONS: 0)
+Failures: 1 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 1, CRITICAL: 0)
+
+HIGH: IAM policy document uses sensitive action 'lambda:InvokeFunction' on wildcarded resource 'c99099fa-b612-426f-a16e-8c41829973e5'
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+You should use the principle of least privilege when defining your IAM policies. This means you should specify each exact permission required without using wildcards, as this could cause the granting of access to certain undesired actions, resources and principals.
+
+See https://avd.aquasec.com/misconfig/avd-aws-0057
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ main.tf:82-85
+   via main.tf:77-86 (data.aws_iam_policy_document.eventBridgeLambdaInvoke)
+    via main.tf:76-87 (data.aws_iam_policy_document.eventBridgeLambdaInvoke)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  76   data "aws_iam_policy_document" "eventBridgeLambdaInvoke" {
+  77     statement {
+  78       effect = "Allow"
+  79       actions = [
+  80         "lambda:InvokeFunction"
+  81       ]
+  82 ┌     resources = [
+  83 │       module.tempoExportFunction.arn,
+  84 └       "${module.tempoExportFunction.arn}:*"
+  ..   
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+modules/lambda_function/main.tf (terraform)
+===========================================
+Tests: 4 (SUCCESSES: 1, FAILURES: 3, EXCEPTIONS: 0)
+Failures: 3 (UNKNOWN: 0, LOW: 2, MEDIUM: 0, HIGH: 1, CRITICAL: 0)
+
+LOW: Log group is not encrypted.
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CloudWatch log groups are encrypted by default, however, to get the full benefit of controlling key rotation and other KMS aspects a KMS CMK should be used.
+
+See https://avd.aquasec.com/misconfig/avd-aws-0017
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ modules/lambda_function/main.tf:1-4
+   via main.tf:35-52 (module.tempoExportFunction)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   1 ┌ resource "aws_cloudwatch_log_group" "lambda" {
+   2 │   name              = var.cloudwatch_log_group_name
+   3 │   retention_in_days = 7
+   4 └ }
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+HIGH: IAM policy document uses sensitive action 'logs:CreateLogStream' on wildcarded resource 'ff5731c6-6703-4283-935e-eead49fb0edb:*'
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+You should use the principle of least privilege when defining your IAM policies. This means you should specify each exact permission required without using wildcards, as this could cause the granting of access to certain undesired actions, resources and principals.
+
+See https://avd.aquasec.com/misconfig/avd-aws-0057
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ modules/lambda_function/main.tf:29-31
+   via modules/lambda_function/main.tf:23-32 (data.aws_iam_policy_document.LambdaPolicy)
+    via modules/lambda_function/main.tf:22-33 (data.aws_iam_policy_document.LambdaPolicy)
+     via main.tf:35-52 (module.tempoExportFunction)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  22   data "aws_iam_policy_document" "LambdaPolicy" {
+  23     statement {
+  24       effect = "Allow"
+  25       actions = [
+  26         "logs:CreateLogStream",
+  27         "logs:PutLogEvents"
+  28       ]
+  29 ┌     resources = [
+  30 └       "${aws_cloudwatch_log_group.lambda.arn}:*"
+  ..   
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+LOW: Function does not have tracing enabled.
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+X-Ray tracing enables end-to-end debugging and analysis of all function activity. This will allow for identifying bottlenecks, slow downs and timeouts.
+
+See https://avd.aquasec.com/misconfig/avd-aws-0066
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ modules/lambda_function/main.tf:54-72
+   via main.tf:35-52 (module.tempoExportFunction)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  54 ┌ resource "aws_lambda_function" "fn" {
+  55 │   filename         = data.archive_file.lambda_package.output_path
+  56 │   source_code_hash = data.archive_file.lambda_package.output_base64sha256
+  57 │   function_name    = var.function_name
+  58 │   role             = aws_iam_role.LambdaExecutionRole.arn
+  59 │   handler          = var.handler
+  60 │   runtime          = var.runtime
+  61 │   architectures    = var.architectures
+  62 └   timeout          = var.timeout
+  ..   
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
