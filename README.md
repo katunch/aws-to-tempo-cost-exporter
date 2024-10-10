@@ -21,6 +21,7 @@ Built with Terraform for seamless infrastructure provisioning, this solution is 
 - Of course one or more AWS Accounts to deploy this solution
 - [Tempo API Key](https://help.tempo.io/timesheets/latest/using-rest-api-integrations)
 - Cost Tracker Project ID
+- [NodeJs 20.x](https://nodejs.org/en/download/package-manager)
 
 # Installation
 
