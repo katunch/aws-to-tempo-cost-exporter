@@ -39,12 +39,16 @@ export const handler = async (event) => {
 
         const totalCost = parseFloat(costData.ResultsByTime[0].Total.UnblendedCost.Amount);
 
+        let description = `AWS costs for ${startOfLastMonth.toFormat('LLLL yyyy')}`;
+        if (process.env.TEMPO_EXPENSE_DESCRIPTION) {
+            description = `${process.env.TEMPO_EXPENSE_DESCRIPTION} ${startOfLastMonth.toFormat('LLLL yyyy')}`;
+        }
         // Prepare payload for Tempo Financial API
         const payload = {
             value: totalCost,
-            category: 'AWS Costs',
+            category: process.env.TEMPO_EXPENSE_CATEGORY || 'AWS Costs',
             date: endOfLastMonthFormatted,
-            description: `AWS costs for ${startOfLastMonth.toFormat('LLLL yyyy')}`
+            description: description
         };
 
         // Send the cost data to the Tempo Financial API

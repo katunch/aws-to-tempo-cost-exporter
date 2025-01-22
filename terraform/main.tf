@@ -37,8 +37,10 @@ module "tempoExportFunction" {
   architectures                    = ["arm64"]
   timeout                          = 15
   environment_variables = {
-    TEMPO_API_TOKEN = var.tempo_api_token
-    TEMPO_PROJECT_ID = var.tempo_project_id
+    TEMPO_API_TOKEN           = var.tempo_api_token
+    TEMPO_PROJECT_ID          = var.tempo_project_id
+    TEMPO_EXPENSE_CATEGORY    = var.tempo_expense_category
+    TEMPO_EXPENSE_DESCRIPTION = var.tempo_expense_description
   }
 }
 

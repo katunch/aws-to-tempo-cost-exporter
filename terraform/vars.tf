@@ -19,3 +19,15 @@ variable "monthly_run_cron_expression" {
   type        = string
   default     = "cron(20 4 2 * ? *)"
 }
+
+variable "tempo_expense_category" {
+  description = "The Tempo expense category"
+  type        = string
+  default     = "AWS"
+}
+
+variable "tempo_expense_description" {
+  description = "The Tempo expense description, Month and Year will be appended to this"
+  type        = string
+  default     = "AWS cost report"
+}
