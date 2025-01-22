@@ -23,15 +23,26 @@ resource "aws_iam_policy" "costExplorerCostAndUsageReport" {
   })
 }
 
+resource "null_resource" "lambda_dependencies" {
+  provisioner "local-exec" {
+    command = "npm install"
+    working_dir = "${path.module}/../exportCostAndUsageReportFunction"
+  }
+
+  triggers = {
+    package_json = filesha256("${path.module}/../exportCostAndUsageReportFunction/package.json")
+  }
+}
+
 module "tempoExportFunction" {
-  depends_on = [aws_iam_policy.costExplorerCostAndUsageReport]
+  depends_on = [aws_iam_policy.costExplorerCostAndUsageReport, null_resource.lambda_dependencies]
   source     = "./modules/lambda_function"
 
   function_name                    = "exportCostExplorerCostAndUsageReportToTempo"
   cloudwatch_log_group_name        = "/aws/lambda/exportCostExplorerCostAndUsageReportToTempo"
   additional_execution_policy_arns = [aws_iam_policy.costExplorerCostAndUsageReport.arn]
-  src_dir                          = "../exportCostAndUsageReportFunction"
-  output_path                      = "../dist/exportCostAndUsageReportFunction"
+  src_dir                          = "${path.module}/../exportCostAndUsageReportFunction"
+  output_path                      = "${path.module}/../dist/exportCostAndUsageReportFunction"
   handler                          = "index.handler"
   runtime                          = "nodejs20.x"
   architectures                    = ["arm64"]
