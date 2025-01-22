@@ -35,7 +35,7 @@ resource "null_resource" "lambda_dependencies" {
 }
 
 module "tempoExportFunction" {
-  depends_on = [aws_iam_policy.costExplorerCostAndUsageReport]
+  depends_on = [aws_iam_policy.costExplorerCostAndUsageReport, null_resource.lambda_dependencies]
   source     = "./modules/lambda_function"
 
   function_name                    = "exportCostExplorerCostAndUsageReportToTempo"
