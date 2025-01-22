@@ -7,15 +7,6 @@ terraform {
   }
 }
 
-provider "aws" {
-  region = var.aws_region
-  default_tags {
-    tags = {
-      Terraform = "true"
-    }
-  }
-}
-
 resource "aws_iam_policy" "costExplorerCostAndUsageReport" {
   name = "CostExplorerCostAndUsageReport"
   policy = jsonencode({
